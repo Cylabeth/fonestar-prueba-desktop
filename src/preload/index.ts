@@ -1,14 +1,30 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
+import { IpcChannels } from '../shared/ipcChannels.js'
+import type { NodeUpdatePayload } from '../shared/types.js'
 
 /**
- * Preload mínimo — fase de arranque.
+ * Preload script — único puente entre renderer y main process.
  *
- * Solo verifica que el bridge está activo y la ventana
- * puede acceder a window.electronAPI.
+ * Expone window.electronAPI vía contextBridge.
+ * Los canales IPC se importan desde shared/ipcChannels para
+ * evitar literales duplicados entre procesos.
  *
- * La API completa (nodes, edges, dialogs) se expone
- * en la fase de IPC, una vez que los handlers estén implementados.
+ * El renderer accede a esta API con tipado completo a través de
+ * la declaración global en src/renderer/types/ipc.types.ts.
  */
 contextBridge.exposeInMainWorld('electronAPI', {
-  appName: 'NodeTron',
+  // ── Nodes ────────────────────────────────────────────────────────────
+  getNodes: () =>
+    ipcRenderer.invoke(IpcChannels.nodes.getAll),
+
+  updateNode: (id: string, data: NodeUpdatePayload) =>
+    ipcRenderer.invoke(IpcChannels.nodes.update, id, data),
+
+  // ── Edges ────────────────────────────────────────────────────────────
+  getEdges: () =>
+    ipcRenderer.invoke(IpcChannels.edges.getAll),
+
+  // ── Diálogos del sistema ─────────────────────────────────────────────
+  openImageDialog: (): Promise<string | null> =>
+    ipcRenderer.invoke(IpcChannels.dialog.openImage),
 })

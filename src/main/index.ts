@@ -1,25 +1,27 @@
 import { app, BrowserWindow } from 'electron'
 import { createMainWindow } from './window.js'
+import { initializeDatabase } from './database/connection.js'
+import { initializeSchema } from './database/schema.js'
+import { registerIpcHandlers } from './ipc/index.js'
 
 /**
- * Entry point del proceso principal de Electron.
+ * Entry point del proceso principal.
  *
- * Nota sobre imports: con module: NodeNext los imports relativos
- * requieren extensión .js explícita. TypeScript resuelve window.js
- * buscando window.ts en compilación y emite window.js en dist-electron.
+ * Toda la inicialización ocurre dentro de app.whenReady()
+ * porque app.getPath('userData') requiere que Electron esté listo.
  *
- * Responsabilidades de este archivo (intencionalmente limitadas):
- * - Gestionar el ciclo de vida de Electron
- * - Crear la ventana principal cuando la app esté lista
- *
- * SQLite e IPC se inicializan aquí en la siguiente fase.
+ * Orden deliberado dentro del callback:
+ * 1. initializeDatabase() → abre/crea el archivo .db
+ * 2. initializeSchema()   → crea tablas y seed si es necesario
+ * 3. registerIpcHandlers() → handlers listos antes de que el renderer pida datos
+ * 4. createMainWindow()   → la ventana carga React cuando todo lo anterior está listo
  */
-
 app.whenReady().then(() => {
+  const db = initializeDatabase()
+  initializeSchema(db)
+  registerIpcHandlers()
   createMainWindow()
 
-  // macOS: reabrir la ventana si se hace clic en el dock
-  // y no hay ninguna ventana abierta
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createMainWindow()
@@ -27,8 +29,6 @@ app.whenReady().then(() => {
   })
 })
 
-// Windows / Linux: cerrar la app al cerrar todas las ventanas
-// En macOS este comportamiento no aplica por convención de plataforma
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
