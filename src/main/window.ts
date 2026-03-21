@@ -1,13 +1,13 @@
 import { BrowserWindow, shell } from 'electron'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+//import { fileURLToPath } from 'node:url'
 
 /**
  * En ESM no existe __dirname de forma nativa.
  * Este patrón permite reconstruirlo a partir de import.meta.url.
  */
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+//const __filename = fileURLToPath(import.meta.url)
+//const __dirname = path.dirname(__filename)
 
 /**
  * Crea la ventana principal de la aplicación.
@@ -46,6 +46,7 @@ export function createMainWindow(): BrowserWindow {
 
     webPreferences: {
       preload: preloadPath,
+      sandbox: false, // Desactiva el sandbox para permitir IPC en preload
 
       /**
        * Aisla el contexto del renderer.
@@ -75,8 +76,10 @@ export function createMainWindow(): BrowserWindow {
    * Producción:
    * - Carga el build estático
    */
+  
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(process.env.VITE_DEV_SERVER_URL)
+    win.webContents.openDevTools({ mode: 'detach' })
   } else {
     win.loadFile(path.join(__dirname, '../../dist/index.html'))
   }

@@ -9,15 +9,16 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    "types": ["node"],
     "sourceMap": true,
-    "types": ["node"]
+    "noEmit": false
   },
   "include": [
-    "src/main/**/*",
     "src/preload/**/*",
     "src/shared/**/*"
   ],
   "exclude": [
+    "src/main/**/*",
     "src/renderer/**/*",
     "node_modules",
     "dist",
