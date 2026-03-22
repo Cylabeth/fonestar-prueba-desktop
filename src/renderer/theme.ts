@@ -50,8 +50,8 @@ export const lightTheme: Theme = createTheme({
       paper: '#FFFFFF',
     },
     text: {
-      primary: '#1a2340',
-      secondary: '#5c6780',
+      primary: '#1e2d5e',
+      secondary: '#475680',
     },
   },
 })
