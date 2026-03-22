@@ -79,7 +79,7 @@ export function createMainWindow(): BrowserWindow {
   
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(process.env.VITE_DEV_SERVER_URL)
-    win.webContents.openDevTools({ mode: 'detach' })
+   // win.webContents.openDevTools({ mode: 'detach' })
   } else {
     win.loadFile(path.join(__dirname, '../../dist/index.html'))
   }
